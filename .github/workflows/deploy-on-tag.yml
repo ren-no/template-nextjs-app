@@ -1,0 +1,49 @@
+# Deploy til test og prod ved push av tag (f.eks. v1.0.0)
+# Endre PROSJEKTNAVN til ditt prosjektnavn før bruk
+name: Deploy on Tag
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  build-image:
+    permissions:
+      contents: read
+      packages: write
+      attestations: write
+      id-token: write
+    uses: ren-no/shared-workflows/.github/workflows/docker-deploy.yml@main
+    with:
+      releaseTag: ${{ github.ref_name }}
+      imageName: PROSJEKTNAVN
+    secrets:
+      WORKFLOW_TOKEN: ${{ secrets.CI_REN_TOKEN }}
+
+  deploy-test:
+    needs: build-image
+    uses: ren-no/shared-workflows/.github/workflows/deploy-service.yml@main
+    with:
+      environment: Test
+      releaseTag: ${{ github.ref_name }}
+      host: apptest2.internal.ren.no
+      service: PROSJEKTNAVN
+      dockerService: app
+      forceDeploy: true
+    secrets:
+      SSH_KEY: ${{ secrets.RENCI_GHA_TEST_KEY }}
+
+  deploy-prod:
+    needs: build-image
+    uses: ren-no/shared-workflows/.github/workflows/deploy-service.yml@main
+    with:
+      environment: Production
+      releaseTag: ${{ github.ref_name }}
+      host: app2.prod.ren.no
+      service: PROSJEKTNAVN
+      dockerService: app
+      forceDeploy: true
+    secrets:
+      SSH_KEY: ${{ secrets.RENCI_GHA_PROD_KEY }}

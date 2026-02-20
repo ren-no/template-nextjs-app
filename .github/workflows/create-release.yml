@@ -1,0 +1,24 @@
+name: Create Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      releaseVersion:
+        description: 'Release version (uten v-prefiks, f.eks. 1.0.0)'
+        required: true
+      nextVersion:
+        description: 'Neste utviklingsversjon (f.eks. 1.1.0-SNAPSHOT)'
+        required: true
+
+jobs:
+  release:
+    permissions:
+      contents: write
+      packages: read
+    uses: ren-no/shared-workflows/.github/workflows/create-release.yml@main
+    with:
+      releaseVersion: ${{ github.event.inputs.releaseVersion }}
+      nextVersion: ${{ github.event.inputs.nextVersion }}
+      buildTool: npm
+    secrets:
+      WORKFLOW_TOKEN: ${{ secrets.GITHUB_TOKEN }}

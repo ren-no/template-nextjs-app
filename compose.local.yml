@@ -1,0 +1,6 @@
+# Bruk lokalt: docker compose -f compose.yml -f compose.local.yml up
+services:
+  app:
+    build: .
+    env_file:
+      - .env.local
